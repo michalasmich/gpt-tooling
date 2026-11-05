@@ -95,6 +95,7 @@ function validate(destination) {
     ["node", ["scripts/prepare-ponytail.js", "test"]],
     ["node", ["scripts/install.js", "test"]],
     ["node", ["scripts/eval.js", "test"]],
+    ["node", ["scripts/benchmark-geospatial.js", "test"]],
     ["node", ["plugins/ponytail/tests/hooks.test.js"]]
   ];
   for (const [command, args] of checks) run(command, args, destination);

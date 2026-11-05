@@ -149,6 +149,7 @@ node plugins/quire/hooks/quire.js test
 node scripts/prepare-ponytail.js test
 node scripts/install.js test
 node scripts/eval.js test
+node scripts/benchmark-geospatial.js test
 node scripts/release.js test
 ```
 
@@ -170,6 +171,8 @@ Each semantic result is graded in a separate Codex context that ignores user con
 - [Geospatial behavior](plugins/geospatial/evals/behavior.md)
 
 The mechanical checks protect manifests, hook contracts, routes, selector metadata, context budgets, agent-profile semantics, dependency compatibility, and installer behavior. The behavioral suites protect policy outcomes without coupling them to exact prose.
+
+The separate [geospatial pilot](evals/geospatial-pilot/README.md) records tokens, latency, tool activity, raw traces, and repository provenance for an 18-run comparison. Its `test`, `doctor`, and `plan` commands make no model calls.
 
 ## Release packaging
 

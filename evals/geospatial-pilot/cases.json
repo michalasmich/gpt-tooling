@@ -1,0 +1,125 @@
+[
+  {
+    "id": "drone-generalization",
+    "title": "Drone orthomosaic segmentation across new farms",
+    "prompt": "We need to segment individual olive-tree crowns from RGB drone orthomosaics. We have 18 orthomosaics from six farms, with three flights per farm collected on nearby dates. Ground sampling distance ranges from 2.1 to 3.4 cm. Crown polygons were drawn on the completed orthomosaics. The current proposal creates overlapping 512 x 512 tiles, randomly assigns tiles to 70% training, 15% validation and 15% test, computes normalization statistics from all tiles, selects the best model on test IoU, and reports the tile-level bootstrap confidence interval. The intended deployment is on previously unseen farms in another region during the following growing season. We have enough budget to annotate two additional orthomosaics, but no new-region labels are currently available. Review the proposal and give a concrete dataset, split, training, evaluation and evidence plan. Do not browse the web. Use only the supplied facts and clearly identify information that must be measured or decided rather than inventing values.",
+    "criticalFailures": [
+      "Accepts random allocation of overlapping tiles as evidence for unseen-farm or new-region deployment.",
+      "Allows normalization, model selection or other fitted decisions to use the final test data.",
+      "Treats tile-level resampling as an independent uncertainty analysis when inference concerns farms or orthomosaics.",
+      "Invents a buffer distance, IoU threshold, sample size or acceptance criterion without project evidence or a stated requirement."
+    ],
+    "criteria": [
+      {
+        "id": "deployment-contract",
+        "description": "Connects the split and evidence design to deployment on unseen farms, a new region and a later season, while distinguishing what the current six farms can and cannot establish."
+      },
+      {
+        "id": "spatial-grouping",
+        "description": "Keeps overlapping tiles, flights and products from the same farm or source orthomosaic in appropriate groups and identifies orthomosaic construction and neighboring content as dependence or leakage risks."
+      },
+      {
+        "id": "data-lifecycle",
+        "description": "Fits normalization and tunes preprocessing, augmentation, architecture and thresholds using training and development data only, preserving an untouched final evaluation role."
+      },
+      {
+        "id": "label-and-scale",
+        "description": "Checks polygon quality, boundary ambiguity, resolution variation, crown support, tiling edge effects and the consequences of resampling or scale normalization."
+      },
+      {
+        "id": "evaluation",
+        "description": "Uses task-appropriate object and/or segmentation evidence at meaningful geographic support and treats farm or orthomosaic units, rather than tiles alone, as the uncertainty unit when justified by the target population."
+      },
+      {
+        "id": "annotation-budget",
+        "description": "Uses the two-orthomosaic annotation budget to resolve a material evidence gap and explains the limitation if no representative new-region evaluation can be obtained."
+      },
+      {
+        "id": "actionability",
+        "description": "Provides an ordered, reproducible plan and separates observed facts, decisions, measurements and remaining uncertainty."
+      }
+    ]
+  },
+  {
+    "id": "sar-ship-detection",
+    "title": "SAR ship detection under geographic and acquisition shift",
+    "prompt": "We are designing a ship detector from Sentinel-1 IW GRD scenes with VV and VH channels. The archive contains 420 scenes from 30 ports over four years, with repeated relative orbits and many adjacent acquisitions. Candidate ship labels come from AIS positions matched within a time window, but the matching error and missing-AIS rate have not been quantified. The proposed pipeline clips the backscatter to a visually chosen range, converts each channel to 8-bit PNG, duplicates VV into three channels for an ImageNet detector, randomly splits 256 x 256 patches, and reports patch mAP. Deployment will cover ports and open-water routes in countries absent from training, including different incidence-angle distributions and sea states. Review the measurement, label, dataset, preprocessing, modeling and validation plan. Recommend the simplest defensible baseline and the next comparison only if a named limitation justifies it. Do not browse the web or invent numeric thresholds.",
+    "criticalFailures": [
+      "Treats GRD backscatter as ordinary RGB imagery without checking calibration, units, geometry, incidence angle, polarization and product preprocessing.",
+      "Accepts random patch splitting despite repeated ports, orbits, dates or adjacent acquisitions.",
+      "Treats AIS-derived labels as complete and exact without addressing temporal matching, positional uncertainty and missing transmissions.",
+      "Claims geographic transfer from a patch-level in-distribution test."
+    ],
+    "criteria": [
+      {
+        "id": "measurement-contract",
+        "description": "Defines and preserves the relevant GRD measurement contract, including calibration state, units or scale, geometry, polarization, incidence-angle effects, speckle and NoData or land masking choices."
+      },
+      {
+        "id": "representation",
+        "description": "Questions irreversible visual clipping and 8-bit conversion, uses VV and VH deliberately, and treats any RGB-pretrained adapter as a candidate requiring controlled comparison rather than a default truth."
+      },
+      {
+        "id": "label-quality",
+        "description": "Characterizes AIS matching uncertainty, missing positives, non-ship confounders and the spatial-temporal support of labels, with a targeted review strategy."
+      },
+      {
+        "id": "split-and-shift",
+        "description": "Groups dependent patches by appropriate scene, acquisition, port, orbit and time units and reserves evidence that reflects absent countries, open-water routes and acquisition shift."
+      },
+      {
+        "id": "baseline-and-escalation",
+        "description": "Defines a modest reproducible detector baseline and adds a more specialized architecture, pretraining scheme or adaptation method only for an observed material limitation."
+      },
+      {
+        "id": "evaluation",
+        "description": "Evaluates detection at scene and deployment-relevant support, includes false alarms and missed ships across relevant strata, and calibrates any operating threshold on development evidence only."
+      },
+      {
+        "id": "actionability",
+        "description": "Provides an ordered experiment and audit plan with lineage, reproducibility fields and explicit unresolved deployment evidence."
+      }
+    ]
+  },
+  {
+    "id": "multimodal-change-deployment",
+    "title": "Multimodal land-change mapping for future events",
+    "prompt": "A team wants to map post-fire vegetation loss for future wildfire events. Available training data cover 24 fires from 2019-2024. Inputs include pre-fire and post-fire Sentinel-2 surface-reflectance composites, Sentinel-1 GRD VV/VH composites and annual 10 m embedding products. Fire-severity polygons were interpreted mainly from the same post-fire optical imagery. The current proposal resamples every input to a common 10 m grid, concatenates all channels, randomly splits pixels, fine-tunes the largest available foundation model, selects the probability threshold on the test set and reports overall pixel accuracy. Intended deployment is on fires from 2026 onward across ecosystems and countries absent from training, with cloudy optical observations sometimes unavailable. Review the problem formulation and propose a defensible end-to-end strategy covering target construction, temporal availability, alignment, fusion, baselines, splitting, missing modalities, validation, uncertainty and deployment. Do not browse the web. Do not assume that a named embedding or foundation model is suitable without establishing its input and temporal contract.",
+    "criticalFailures": [
+      "Accepts random pixel splitting across the same fire events.",
+      "Uses information that would not be available at the declared prediction time or ignores possible temporal leakage from annual embeddings.",
+      "Assumes that resampling to the same nominal grid proves physical or semantic alignment.",
+      "Selects thresholds or models on the final test set or claims future-country generalization from the current random split."
+    ],
+    "criteria": [
+      {
+        "id": "target-and-time",
+        "description": "Defines the prediction time, target meaning and support, distinguishes vegetation loss from fire severity where necessary, and examines circularity from labels interpreted from the same optical evidence."
+      },
+      {
+        "id": "input-contracts",
+        "description": "Checks sensor processing, units, dates, compositing, embedding vintage and provenance, and whether every input would be available for a future event at inference time."
+      },
+      {
+        "id": "alignment-and-fusion",
+        "description": "Verifies CRS, transforms, support, resolution, resampling semantics and co-registration, then chooses a fusion strategy that acknowledges modality and temporal differences."
+      },
+      {
+        "id": "split-and-deployment",
+        "description": "Groups samples by fire event and constructs development and final evidence around future events, unseen ecosystems or countries, while stating what 24 historical fires cannot establish."
+      },
+      {
+        "id": "baselines-and-models",
+        "description": "Starts with interpretable sensor-matched baselines and evaluates embeddings or foundation models only after verifying bands, temporal coverage, normalization, resolution, weights, license and software contract."
+      },
+      {
+        "id": "missingness-and-uncertainty",
+        "description": "Plans for cloudy or absent optical data without silently changing the deployment population and distinguishes confidence, calibration, out-of-distribution evidence and abstention."
+      },
+      {
+        "id": "evaluation-and-actionability",
+        "description": "Uses event-level and map-relevant metrics, development-only thresholding, stratified diagnostics and a reproducible staged plan with calibrated claims."
+      }
+    ]
+  }
+]
