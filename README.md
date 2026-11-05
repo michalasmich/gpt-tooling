@@ -172,7 +172,7 @@ Each semantic result is graded in a separate Codex context that ignores user con
 
 The mechanical checks protect manifests, hook contracts, routes, selector metadata, context budgets, agent-profile semantics, dependency compatibility, and installer behavior. The behavioral suites protect policy outcomes without coupling them to exact prose.
 
-The separate [geospatial pilot](evals/geospatial-pilot/README.md) records tokens, latency, tool activity, raw traces, and repository provenance for an 18-run comparison. Its `test`, `doctor`, and `plan` commands make no model calls.
+The separate [geospatial benchmark](evals/geospatial-pilot/README.md) records tokens, latency, tool activity, raw traces, and repository provenance for a 42-run comparison across three pilot and four paper-derived cases. Its `test`, `doctor`, and `plan` commands make no model calls.
 
 ## Release packaging
 

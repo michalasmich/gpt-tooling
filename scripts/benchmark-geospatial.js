@@ -15,6 +15,7 @@ const conditions = {
   core_tooling: { core: true, geospatial: false },
   geospatial_tooling: { core: true, geospatial: true }
 };
+const strata = ["pilot", "paper_challenge"];
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -55,6 +56,7 @@ function readJson(file) {
 function loadSuite() {
   const config = readJson(path.join(suiteRoot, "config.json"));
   const cases = readJson(path.join(suiteRoot, "cases.json"));
+  const paperReferences = fs.readFileSync(path.join(suiteRoot, "paper-reference-dossiers.md"), "utf8");
   if (config.schemaVersion !== 1 || !config.seed || !config.candidate?.model || !config.candidate?.reasoningEffort) {
     throw new Error("The pilot configuration is invalid.");
   }
@@ -64,11 +66,14 @@ function loadSuite() {
   if (!Array.isArray(cases) || !cases.length) throw new Error("The pilot case list is empty.");
   const ids = new Set();
   for (const item of cases) {
-    if (!item.id || ids.has(item.id) || !item.title || !item.prompt || !Array.isArray(item.criteria) || !item.criteria.length) {
+    if (!item.id || ids.has(item.id) || !strata.includes(item.stratum) || !item.title || !item.prompt || !Array.isArray(item.criteria) || !item.criteria.length) {
       throw new Error(`The pilot case is invalid: ${item.id || "unnamed"}.`);
     }
     if (!Array.isArray(item.criticalFailures) || !item.criticalFailures.length) {
-      throw new Error(`The pilot case has no critical failures: ${item.id}.`);
+      throw new Error(`The benchmark case has no critical failures: ${item.id}.`);
+    }
+    if (item.stratum === "paper_challenge" && (!item.paperReferenceId || !paperReferences.includes(`## \`${item.paperReferenceId}\``))) {
+      throw new Error(`The paper reference dossier is missing: ${item.id}.`);
     }
     const criterionIds = new Set();
     for (const criterion of item.criteria) {
@@ -84,6 +89,10 @@ function loadSuite() {
 
 function stableKey(seed, value) {
   return crypto.createHash("sha256").update(`${seed}:${value}`).digest("hex");
+}
+
+function fileSha256(file) {
+  return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 }
 
 function schedule(config, cases) {
@@ -157,8 +166,9 @@ function provenance(config, cases) {
       const cli = codexCommand();
       return successful(cli.command, [...cli.prefix, "--version"]);
     })(),
-    configSha256: stableKey("file", fs.readFileSync(path.join(suiteRoot, "config.json"))),
-    casesSha256: stableKey("file", fs.readFileSync(path.join(suiteRoot, "cases.json"))),
+    configSha256: fileSha256(path.join(suiteRoot, "config.json")),
+    casesSha256: fileSha256(path.join(suiteRoot, "cases.json")),
+    paperReferencesSha256: fileSha256(path.join(suiteRoot, "paper-reference-dossiers.md")),
     caseCount: cases.length,
     candidateModel: config.candidate.model,
     reasoningEffort: config.candidate.reasoningEffort
@@ -207,18 +217,24 @@ function runCandidates() {
     let trace;
     try { trace = parseTrace(result.stdout || ""); }
     catch (error) { trace = { parseError: error.message, completed: false }; }
+    const protocolViolation = ["command_execution", "mcp_tool_call", "web_search", "file_change"]
+      .some((type) => trace.tools?.[type]);
     const record = {
       ...planned,
       title: item.title,
+      stratum: item.stratum,
       startedAt: startedAt.toISOString(),
       durationMs,
       exitCode: result.status,
       timedOut: result.error?.code === "ETIMEDOUT",
-      trace
+      trace,
+      protocolViolation
     };
     fs.writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
-    process.stdout.write(`${result.status === 0 && trace.completed ? "DONE" : "FAIL"} ${planned.id}\n`);
-    if (result.status !== 0 || !trace.completed) throw new Error(`Candidate run failed: ${planned.id}. Resume after inspecting ${directory}.`);
+    process.stdout.write(`${result.status === 0 && trace.completed && !protocolViolation ? "DONE" : "FAIL"} ${planned.id}\n`);
+    if (result.status !== 0 || !trace.completed || protocolViolation) {
+      throw new Error(`Candidate run failed or violated the no-tools protocol: ${planned.id}. Resume after inspecting ${directory}.`);
+    }
   }
 }
 
@@ -239,7 +255,8 @@ function doctor() {
     }
     process.stdout.write(`OK ${condition}\n`);
   }
-  process.stdout.write(`${version}; ${cases.length} cases; ${schedule(config, cases).length} candidate runs.\n`);
+  const counts = Object.fromEntries(strata.map((stratum) => [stratum, cases.filter((item) => item.stratum === stratum).length]));
+  process.stdout.write(`${version}; ${cases.length} cases (${counts.pilot} pilot, ${counts.paper_challenge} paper); ${schedule(config, cases).length} candidate runs.\n`);
 }
 
 function plan() {
