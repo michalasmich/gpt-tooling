@@ -411,7 +411,7 @@ function validateCompleteIds(entries, expected, field, label) {
   }
 }
 
-function judgeArguments(config, temporary, output, schemaPath, prompt) {
+function judgeArguments(config, temporary, output, schemaPath) {
   return [
     "exec", "--json", "--ephemeral", "--skip-git-repo-check",
     "--ignore-user-config", "--ignore-rules", "--disable", "hooks", "--disable", "plugins",
@@ -421,7 +421,7 @@ function judgeArguments(config, temporary, output, schemaPath, prompt) {
     "--disable", "in_app_local_automation",
     "--sandbox", "read-only", "--model", config.judge.model,
     "--config", `model_reasoning_effort=\"${config.judge.reasoningEffort}\"`,
-    "--cd", temporary, "--output-last-message", output, "--output-schema", schemaPath, prompt
+    "--cd", temporary, "--output-last-message", output, "--output-schema", schemaPath
   ];
 }
 
@@ -433,9 +433,9 @@ function executeJudge(config, prompt, schema, directory) {
   fs.writeFileSync(schemaPath, JSON.stringify(schema), "utf8");
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(path.join(directory, "prompt.txt"), `${prompt}\n`, "utf8");
-  const args = [...cli.prefix, ...judgeArguments(config, temporary, output, schemaPath, prompt)];
+  const args = [...cli.prefix, ...judgeArguments(config, temporary, output, schemaPath)];
   const started = process.hrtime.bigint();
-  const result = run(cli.command, args, { cwd: temporary, timeout: config.judge.timeoutMs });
+  const result = run(cli.command, args, { cwd: temporary, input: prompt, timeout: config.judge.timeoutMs });
   const durationMs = Number(process.hrtime.bigint() - started) / 1e6;
   fs.writeFileSync(path.join(directory, "trace.jsonl"), result.stdout || "", "utf8");
   fs.writeFileSync(path.join(directory, "stderr.txt"), result.stderr || "", "utf8");
@@ -864,7 +864,8 @@ function selfTest() {
     if (item.stratum === "paper_challenge" && !dossiers[item.paperReferenceId]) throw new Error(`The paper dossier is unavailable: ${item.id}.`);
   }
   if (!validityPrompt(cases[0], "fixture").includes("Anonymized answer:\nfixture")) throw new Error("The validity prompt is invalid.");
-  const isolated = judgeArguments(config, "temporary", "output", "schema", "prompt");
+  const isolated = judgeArguments(config, "temporary", "output", "schema");
+  if (isolated.includes("prompt")) throw new Error("The isolated judge puts prompt content on the command line.");
   for (const required of ["--ignore-user-config", "--ignore-rules", "hooks", "plugins", "shell_tool", "browser_use", "computer_use", "multi_agent", "code_mode", "--output-schema"]) {
     if (!isolated.includes(required)) throw new Error(`The isolated judge arguments omit ${required}.`);
   }
