@@ -11,7 +11,7 @@ GPT-5.6 can reason broadly, write substantial code, and produce polished documen
 | [Plinth](plugins/plinth/README.md) | Requirements, technical semantics, methodology, evidence, risk, decisions, review, and verification | What is technically defensible? |
 | [Ponytail](plugins/ponytail/README.md) | Source-code form, reuse, dependency restraint, abstraction restraint, and the minimum correct diff | How little code should exist? |
 | [Quire](plugins/quire/README.md) | Natural-language expression, organization, readability, terminology, genre conventions, and faithful presentation | How should the accepted meaning be communicated? |
-| [Geospatial](plugins/geospatial/README.md) | Optional remote-sensing, Earth-observation, GIS, and geospatial ML domain guidance | What do the sensor, spatial, temporal, and deployment semantics require? |
+| [Geospatial](plugins/geospatial/README.md) | Optional remote-sensing, Earth-observation, GIS, and geospatial ML domain guidance | What does this geospatial problem require, from data and modeling to validation and deployment? |
 
 The modules cooperate through an explicit authority model:
 
