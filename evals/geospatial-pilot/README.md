@@ -34,6 +34,8 @@ node scripts/benchmark-geospatial.js doctor
 node scripts/benchmark-geospatial.js plan
 ```
 
+On native Windows, `doctor` also verifies the documented `unelevated` read-only sandbox fallback used by candidate runs when elevated sandbox provisioning is unavailable.
+
 After the cases and rubric are frozen, `node scripts/benchmark-geospatial.js run` executes the randomized schedule. It requires a clean worktree and writes resumable records under `dist/geospatial-benchmark/`. A resume preserves the original provenance and refuses any repository, CLI, configuration or installed-plugin-source mismatch; every run record stores that provenance hash. Each record also contains the final answer, raw JSONL trace, standard error, wall-clock duration, token usage, tool-event counts, condition, stratum, repetition and model. Web access and arbitrary local inspection are prohibited. Each enabled-tooling condition receives frozen repository copies of its skills and may issue only recorded, read-only `Get-Content -Raw -LiteralPath` calls for Markdown files inside those condition-specific skill roots. Every other tool event is a protocol violation.
 
 After all candidate runs succeed, run the two judging stages in order:

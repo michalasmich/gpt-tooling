@@ -280,7 +280,7 @@ function candidateArtifacts(config, cases) {
     const answerPath = path.join(directory, "answer.md");
     if (!fs.existsSync(recordPath) || !fs.existsSync(answerPath)) throw new Error(`The candidate output is incomplete: ${planned.id}.`);
     const record = readJson(recordPath);
-    if (record.exitCode !== 0 || !record.trace?.completed || record.protocolViolation || record.provenanceSha256 !== provenanceSha256) throw new Error(`The candidate output is not eligible: ${planned.id}.`);
+    if (!eligibleCandidateRecord(record, provenanceSha256)) throw new Error(`The candidate output is not eligible: ${planned.id}.`);
     return {
       ...planned,
       blindId: stableKey(config.seed, planned.id).slice(0, 16),
@@ -289,6 +289,10 @@ function candidateArtifacts(config, cases) {
       answer: fs.readFileSync(answerPath, "utf8").trim()
     };
   });
+}
+
+function eligibleCandidateRecord(record, provenanceSha256) {
+  return record.exitCode === 0 && record.trace?.completed === true && record.protocolViolation === false && record.provenanceSha256 === provenanceSha256;
 }
 
 function comparisonSchedule(config, cases, candidates) {
@@ -517,7 +521,9 @@ function runCandidates() {
     const directory = path.join(runsRoot, planned.id);
     const recordPath = path.join(directory, "record.json");
     if (fs.existsSync(recordPath)) {
-      if (readJson(recordPath).provenanceSha256 !== provenanceSha256) throw new Error(`The candidate record has different provenance: ${planned.id}.`);
+      const existing = readJson(recordPath);
+      if (existing.provenanceSha256 !== provenanceSha256) throw new Error(`The candidate record has different provenance: ${planned.id}.`);
+      if (!eligibleCandidateRecord(existing, provenanceSha256)) throw new Error(`The candidate record is incomplete or failed and must be archived before retry: ${planned.id}.`);
       process.stdout.write(`SKIP ${planned.id}\n`);
       continue;
     }
@@ -534,6 +540,7 @@ function runCandidates() {
       "--sandbox", "read-only",
       "--model", config.candidate.model,
       "--config", `model_reasoning_effort=\"${config.candidate.reasoningEffort}\"`,
+      "--config", "windows.sandbox=\"unelevated\"",
       "--cd", workspaces[planned.condition],
       "--output-last-message", answerPath,
       item.prompt
@@ -752,6 +759,17 @@ function doctor() {
     }
     process.stdout.write(`OK ${condition}\n`);
   }
+  if (process.platform === "win32") {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "geospatial-sandbox-check-"));
+    try {
+      fs.writeFileSync(path.join(temporary, "probe.md"), "sandbox-ok\n", "utf8");
+      const output = successful(cli.command, [...cli.prefix, "sandbox", "-P", ":read-only", "-c", "windows.sandbox=\"unelevated\"", "-C", temporary, "powershell.exe", "-NoProfile", "-Command", "Get-Content -Raw -LiteralPath probe.md"]);
+      if (output.trim() !== "sandbox-ok") throw new Error("The Windows sandbox read probe returned unexpected output.");
+      process.stdout.write("OK windows_unelevated_sandbox\n");
+    } finally {
+      fs.rmSync(temporary, { recursive: true, force: true });
+    }
+  }
   const counts = Object.fromEntries(strata.map((stratum) => [stratum, cases.filter((item) => item.stratum === stratum).length]));
   process.stdout.write(`${version}; ${cases.length} cases (${counts.pilot} pilot, ${counts.paper_challenge} paper); ${schedule(config, cases).length} candidate runs.\n`);
 }
@@ -817,6 +835,10 @@ function selfTest() {
   }
   if (stableProvenance({ createdAt: "a", commit: "x" }) !== stableProvenance({ createdAt: "b", commit: "x" }) || stableProvenance({ createdAt: "a", commit: "x" }) === stableProvenance({ createdAt: "a", commit: "y" })) {
     throw new Error("The resume provenance comparison is invalid.");
+  }
+  const eligible = { exitCode: 0, trace: { completed: true }, protocolViolation: false, provenanceSha256: "fixture" };
+  if (!eligibleCandidateRecord(eligible, "fixture") || eligibleCandidateRecord({ ...eligible, exitCode: 1 }, "fixture")) {
+    throw new Error("The candidate resume eligibility check is invalid.");
   }
   process.stdout.write(`The geospatial benchmark checks passed (${expected} candidate runs planned).\n`);
 }
