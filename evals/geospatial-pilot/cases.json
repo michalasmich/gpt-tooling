@@ -33,11 +33,7 @@
       },
       {
         "id": "annotation-budget",
-        "description": "Uses the two-orthomosaic annotation budget to resolve a material evidence gap and explains the limitation if no representative new-region evaluation can be obtained."
-      },
-      {
-        "id": "actionability",
-        "description": "Provides an ordered, reproducible plan and separates observed facts, decisions, measurements and remaining uncertainty."
+        "description": "Uses the two-orthomosaic annotation budget to resolve a material evidence gap, records the split and preprocessing lineage needed for reproduction, and explains the limitation if no representative new-region evaluation can be obtained."
       }
     ]
   },
@@ -55,11 +51,7 @@
     "criteria": [
       {
         "id": "measurement-contract",
-        "description": "Defines and preserves the relevant GRD measurement contract, including calibration state, units or scale, geometry, polarization, incidence-angle effects, speckle and NoData or land masking choices."
-      },
-      {
-        "id": "representation",
-        "description": "Questions irreversible visual clipping and 8-bit conversion, uses VV and VH deliberately, and treats any RGB-pretrained adapter as a candidate requiring controlled comparison rather than a default truth."
+        "description": "Defines and preserves the GRD measurement contract, including calibration state, units or scale, geometry, polarization, incidence-angle effects, speckle and NoData or land masking; questions irreversible visual clipping and 8-bit conversion; and treats RGB-pretrained adaptation as a controlled candidate rather than a default truth."
       },
       {
         "id": "label-quality",
@@ -78,8 +70,8 @@
         "description": "Evaluates detection at scene and deployment-relevant support, includes false alarms and missed ships across relevant strata, and calibrates any operating threshold on development evidence only."
       },
       {
-        "id": "actionability",
-        "description": "Provides an ordered experiment and audit plan with lineage, reproducibility fields and explicit unresolved deployment evidence."
+        "id": "reproducibility-and-deployment-evidence",
+        "description": "Records scene and label lineage, preprocessing and split configuration, and identifies the external evidence still required for the claimed deployment population."
       }
     ]
   },
@@ -120,8 +112,8 @@
         "description": "Plans for cloudy or absent optical data without silently changing the deployment population and distinguishes confidence, calibration, out-of-distribution evidence and abstention."
       },
       {
-        "id": "evaluation-and-actionability",
-        "description": "Uses event-level and map-relevant metrics, development-only thresholding, stratified diagnostics and a reproducible staged plan with calibrated claims."
+        "id": "evaluation-and-reproducibility",
+        "description": "Uses event-level and map-relevant metrics, development-only thresholding, stratified diagnostics and recorded data, split, preprocessing and model configurations."
       }
     ]
   },
@@ -130,12 +122,12 @@
     "stratum": "paper_challenge",
     "paperReferenceId": "changeclip-2024",
     "title": "Change detection from single-date supervision under domain shift",
-    "prompt": "A remote-sensing team needs a binary change detector for bi-temporal optical imagery, but it has very few labelled image pairs. It does have a large collection of single-date images with pixel-level land-cover annotations, access to a pretrained vision-language image encoder, and access to a controllable image-inpainting model. Deployment will be on unseen change-detection datasets acquired in different regions and imaging conditions. Naively pairing unrelated images creates impossible overlaps and unrealistic transitions, while simple brightness augmentation does not represent object-level change. Design a training and evaluation strategy that uses the available resources without assuming that synthetic imagery is automatically realistic. Cover pseudo-pair construction, representation learning, dense prediction, baselines, ablations, domain-generalization evaluation and failure analysis. Do not browse the web, inspect local files, search for a matching publication, name a remembered paper, or invent performance values.",
+    "prompt": "A remote-sensing team needs a binary change detector for bi-temporal optical imagery, but it has very few labelled image pairs. It has a much larger collection of single-date images with pixel-level land-cover annotations, access to general pretrained image models, and the capacity to generate or edit training imagery if that is justified. Deployment will be on regions and imaging conditions absent from development data. Design the target, supervision, model-development and evaluation strategy. Decide whether and how single-date annotations, pretraining and synthetic data should be used; define the comparisons needed to determine whether each adds real-domain value; and state what evidence would support a domain-generalization claim. Do not browse the web, inspect local files other than benchmark-provided skill instructions, search for a matching publication, name a remembered paper, or invent performance values.",
     "criticalFailures": [
-      "Treats random pairing of unrelated single-date images as a realistic model of geographic change without testing its artifacts.",
+      "Treats random pairing of unrelated single-date images as a realistic model of geographic change without testing spatial, semantic and radiometric artifacts.",
       "Uses target-domain labels, validation data or test results to tune a method presented as zero-shot domain generalization.",
-      "Assumes controllable generation preserves remote-sensing geometry, radiometry and class semantics without quality controls or real-pair validation.",
-      "Claims that a pretrained global image encoder directly supplies adequate pixel-level change representations without dense adaptation or comparison."
+      "Assumes generated imagery preserves remote-sensing geometry, radiometry and class semantics without quality controls or real-pair validation.",
+      "Claims that generic pretraining or synthetic supervision establishes target-domain performance without an untouched real-domain evaluation."
     ],
     "criteria": [
       {
@@ -143,28 +135,20 @@
         "description": "Defines the change target, prediction support, available single-date supervision, inference-time inputs and the intended unseen-domain claim."
       },
       {
-        "id": "controlled-pseudo-pairs",
-        "description": "Constructs spatially corresponding pseudo-pairs through controlled object or region edits, includes both true semantic transitions and nuisance pseudo-changes, and audits geometry, seams, scale, radiometry and class validity."
+        "id": "supervision-strategy",
+        "description": "Defines defensible uses of scarce paired labels, single-date semantic labels and optional synthetic supervision while preserving spatial correspondence and the distinction between real change and nuisance variation."
       },
       {
-        "id": "dense-representation",
-        "description": "Adapts pretrained representations to region- and pixel-level prediction, uses temporal correspondence deliberately, and explains any semantic, contrastive or prompt-conditioned auxiliary supervision."
+        "id": "representation-and-inference",
+        "description": "Explains how temporal correspondence and dense pixel or object support are modeled, and treats pretrained representations as hypotheses whose suitability and adaptation must be tested."
       },
       {
-        "id": "baseline-and-ablation",
-        "description": "Compares real-pair supervision where available, naive single-date pairing, ordinary augmentations, frozen and fine-tuned pretrained encoders, and controlled generation through component-level ablations."
+        "id": "comparisons-and-ablation",
+        "description": "Compares the simplest paired-data baseline with single-date, pretrained and synthetic alternatives using controlled ablations that can attribute any target-domain change."
       },
       {
         "id": "domain-generalization-evaluation",
-        "description": "Separates source development from untouched target-domain evaluation and measures change-class precision, recall, F1 or IoU across multiple target datasets and relevant nuisance strata."
-      },
-      {
-        "id": "synthetic-to-real-risk",
-        "description": "Tests whether synthetic artifacts become shortcuts, evaluates realism and coverage against real paired changes, and limits claims when generated transitions do not represent the target process."
-      },
-      {
-        "id": "actionability",
-        "description": "Provides a staged reproducible experiment whose outcomes determine whether generation, vision-language adaptation or a simpler baseline should be retained."
+        "description": "Keeps target-domain labels and results outside development, evaluates multiple untouched real domains with change-sensitive metrics and relevant nuisance strata, audits synthetic shortcuts, and limits claims to the observed transfer conditions."
       }
     ]
   },
@@ -173,41 +157,37 @@
     "stratum": "paper_challenge",
     "paperReferenceId": "stdenet-2026",
     "title": "Fine-grained cropland change under phenological and boundary interference",
-    "prompt": "Design a binary cropland change detector for pairs of high-resolution optical images. The difficult cases contain unchanged fields with strong seasonal or illumination differences, cropland that resembles forest, grassland, water or bare soil, and true changes that are small, fragmented, narrow or irregular. A Siamese multiscale encoder is available, but simple subtraction produces false alarms and fixed bilinear decoding blurs boundaries and displaces small regions. Propose a defensible model and experimental programme that addresses change discrimination, boundary preservation and multiscale reconstruction. Explain which mechanisms solve which failure modes, the simplest credible baselines, the required ablations, boundary and region metrics, efficiency checks and the evidence needed before claiming geographic or seasonal generalization. Do not browse the web, inspect local files, search for a matching publication, name a remembered paper, or invent results.",
+    "prompt": "Design a binary cropland change detector for pairs of high-resolution optical images assembled from different acquisition dates and, in some evaluation regions, different image sources. Unchanged fields may have strong seasonal, illumination or management differences; cropland can resemble forest, grassland, water or bare soil; and true changes may be small, fragmented, narrow or irregular. Orthorectification and CRS metadata are available, but residual image and label displacement has not been quantified. Propose an end-to-end measurement, data, model and evaluation strategy. Explain how the design separates real conversion from nuisance variation, preserves small-region and boundary evidence, and tests geographic and seasonal transfer without assuming that a more complex architecture is necessary. Do not browse the web, inspect local files other than benchmark-provided skill instructions, search for a matching publication, name a remembered paper, or invent thresholds or results.",
     "criticalFailures": [
-      "Responds only with a larger backbone or foundation model without addressing pseudo-change discrimination and boundary reconstruction.",
-      "Treats raw temporal subtraction as sufficient despite the stated phenological, radiometric and semantic-confusion failure modes.",
+      "Treats matching CRS or nominal pixel size as proof of physical co-registration, or assumes feature-space alignment can repair unmeasured source displacement.",
+      "Responds only with a larger backbone or foundation model without addressing nuisance change, fine spatial support and label uncertainty.",
       "Claims generalization from in-dataset patch scores or unlabelled visual examples alone.",
       "Invents boundary tolerances, patch-size thresholds or acceptance criteria without data or operational justification."
     ],
     "criteria": [
       {
-        "id": "failure-mode-decomposition",
-        "description": "Separates nuisance temporal variation, background semantic confusion, fine boundary loss and cross-scale misalignment rather than treating them as one generic accuracy problem."
+        "id": "measurement-and-coregistration",
+        "description": "Audits source products, CRS, transforms, resolution, acquisition geometry and dates; measures residual image and label displacement; and keeps physical co-registration distinct from learned feature alignment."
       },
       {
-        "id": "spatiotemporal-difference-modeling",
-        "description": "Combines complementary spatial-structural and cross-temporal evidence, with an explicit mechanism for suppressing nuisance changes while preserving true local responses."
+        "id": "target-and-nuisance-semantics",
+        "description": "Defines cropland conversion and its label support, separates phenology, illumination, management and background similarity from the target, and accounts for annotation uncertainty."
       },
       {
-        "id": "boundary-representation",
-        "description": "Preserves or learns directional and multiscale boundary cues and connects the chosen mechanism to narrow, fragmented and irregular change regions."
+        "id": "temporal-and-spatial-modeling",
+        "description": "Uses complementary temporal and spatial evidence to discriminate real conversion from nuisance variation while retaining responses for small and fragmented changes."
       },
       {
-        "id": "aligned-decoding",
-        "description": "Addresses semantic and spatial mismatch between deep and shallow features using content-adaptive alignment, learned offsets or another justified alternative to fixed interpolation."
+        "id": "fine-geometry-preservation",
+        "description": "Preserves multiscale region and boundary information with a justified decoder or post-processing design and does not confuse neural feature refinement with physical registration."
       },
       {
         "id": "baselines-and-ablations",
-        "description": "Includes simple early or late fusion, absolute difference and fixed-decoder baselines, then isolates difference modeling, boundary enhancement and decoder alignment contributions."
+        "description": "Starts with credible early- or late-fusion and simple difference baselines, then adds complexity only for observed failure modes and isolates each material change."
       },
       {
-        "id": "evaluation",
-        "description": "Uses class-imbalance-aware region metrics, boundary completeness and correctness evidence, qualitative error strata, efficiency measurements and repeated or otherwise justified stability checks."
-      },
-      {
-        "id": "generalization-claims",
-        "description": "Requires labelled spatially independent geographic or seasonal evaluation for transfer claims and distinguishes benchmark improvement from deployment evidence."
+        "id": "evaluation-and-generalization",
+        "description": "Uses region and boundary evidence at spatially independent support, reports efficiency and stability, and requires labelled held-out geographic or seasonal evaluation for transfer claims."
       }
     ]
   },
@@ -216,37 +196,33 @@
     "stratum": "paper_challenge",
     "paperReferenceId": "hpmoe-2026",
     "title": "Multimodal 3D building change with metric height information",
-    "prompt": "A 3D building-change system receives a pre-event digital surface model and a later co-registered optical orthophoto. It must produce both a semantic building-change map and a per-pixel height-change estimate. DSM values are metric, contain noise and reconstruction artifacts, and should not be treated as ordinary grayscale texture. Building changes have a long-tailed magnitude distribution: small vertical differences are common and may be near measurement or registration uncertainty, while large changes are rare but operationally important. Design the fusion, prediction, training and validation strategy. Address modality-specific structure, co-registration, metric units, small-versus-large changes, semantic and height outputs, baselines, uncertainty, computational cost and cross-city generalization. Do not browse the web, inspect local files, search for a matching publication, name a remembered paper, or invent thresholds or results.",
+    "prompt": "A 3D building-change system receives a pre-event digital surface model and a later nominally co-registered optical orthophoto. Training datasets also provide semantic building-change labels and continuous height-change maps derived from independent elevation observations, but their acquisition method, vertical datum, uncertainty and masking rules vary by dataset and must be audited. The deployed system must produce both a semantic change map and a per-pixel height-change estimate. Small vertical differences are common and may be near measurement or registration uncertainty, while large structural changes are rare but operationally important. Design the measurement audit, baselines, multimodal model, training and validation strategy without assuming a particular fusion architecture. Address cross-city generalization and computational cost. Do not browse the web, inspect local files other than benchmark-provided skill instructions, search for a matching publication, name a remembered paper, or invent thresholds or results.",
     "criticalFailures": [
-      "Converts the DSM to a generic image channel without preserving metric meaning, checking its processing contract or accounting for noise and co-registration.",
+      "Discards DSM metric meaning or applies generic image scaling without auditing units, vertical datum, target provenance, noise and co-registration; using a DSM raster channel as a controlled baseline is not itself a failure.",
       "Derives a universal building-change threshold from DSM accuracy or an invented height value without validation against the operational target.",
       "Uses only semantic accuracy or only height RMSE and ignores the joint output contract and changed-region behavior.",
       "Claims cross-city transfer using only random patches or cities represented during development."
     ],
     "criteria": [
       {
-        "id": "measurement-and-alignment",
-        "description": "Preserves DSM units and provenance, verifies CRS, resolution, vertical datum, temporal meaning and co-registration, and distinguishes sensor accuracy from detectable building change."
+        "id": "measurement-target-and-alignment",
+        "description": "Preserves input and target units and provenance, verifies CRS, resolution, vertical datum, temporal meaning, masks and co-registration, and distinguishes sensor accuracy from detectable building change."
       },
       {
-        "id": "modality-specific-priors",
-        "description": "Extracts or learns suitable optical boundary and DSM elevation or morphology cues without collapsing both modalities into an undifferentiated image representation."
+        "id": "baselines-and-representation",
+        "description": "Compares optical-only, DSM-only and simple multimodal baselines while preserving metric elevation semantics, then diagnoses whether modality-specific processing is needed."
       },
       {
-        "id": "fusion-specialization",
-        "description": "Uses conditional routing, experts, gated fusion or a simpler justified mechanism to handle smooth roofs, building instances, topology and heterogeneous background while controlling complexity."
+        "id": "multimodal-fusion-and-complexity",
+        "description": "Chooses fusion and feature specialization according to demonstrated baseline failures, controls added complexity, and does not assume that routed experts or handcrafted priors are necessary."
       },
       {
-        "id": "joint-decision",
-        "description": "Models semantic change and continuous height variation as related but distinct outputs and addresses the long-tailed change-magnitude distribution without suppressing uncertain small changes by fiat."
-      },
-      {
-        "id": "baselines-and-ablation",
-        "description": "Compares optical-only, DSM-only, naive concatenation and established multimodal baselines, then isolates structural guidance, fusion specialization and decision components."
+        "id": "joint-targets-and-change-magnitude",
+        "description": "Models semantic change and continuous height variation as related but distinct targets, audits their consistency, and addresses long-tailed magnitudes without suppressing uncertain small changes by fiat."
       },
       {
         "id": "evaluation-and-uncertainty",
-        "description": "Uses semantic, boundary and metric-height errors including changed-region errors, repeated-run stability, measurement uncertainty and error analysis by change magnitude."
+        "description": "Uses semantic, boundary and metric-height errors including changed-region errors, repeated-run stability, measurement uncertainty, error analysis by change magnitude and controlled component ablations."
       },
       {
         "id": "deployment-and-efficiency",
@@ -259,41 +235,37 @@
     "stratum": "paper_challenge",
     "paperReferenceId": "sdt-2026",
     "title": "Subpixel standing-dead-tree detectability from satellite imagery",
-    "prompt": "A study has 154 geographically distributed forest sites with 3 m four-band surface-reflectance satellite imagery and much finer UAV polygons for standing dead trees, live trees, water, bare or artificial surfaces and grassland. UAV coverage is incomplete, individual satellite pixels are mixtures, isolated dead trees can occupy only part of a pixel, and residual image-to-label displacement may remain. The goal is not merely to maximize segmentation accuracy, but to determine under which subpixel, neighborhood, patch and plot conditions standing-dead-tree signals are detectable and reliable. Design the data preparation, splitting, labels, models, probability treatment, detectability analysis and validation. Separate empirical thresholds discovered from held-out data from values chosen in advance. Do not browse the web, inspect local files, search for a matching publication, name a remembered paper, or invent detectability boundaries.",
+    "prompt": "A multi-region forest study has 3 m multispectral surface-reflectance imagery and much finer UAV polygons for standing dead trees and competing land-cover classes. UAV annotation covers only part of some satellite pixels, individual pixels contain mixtures, isolated targets can occupy only a fraction of a pixel, and residual image-to-label displacement may remain. The objective is to determine when the satellite signal is detectable and reliable, not merely to maximize a segmentation score. Design the measurement checks, label representation, data lifecycle, models, probability analysis and scale-dependent validation. Distinguish exploratory characterization of response transitions from selection and independent confirmation of an operational threshold. Do not browse the web, inspect local files other than benchmark-provided skill instructions, search for a matching publication, name a remembered paper, or invent detectability boundaries.",
     "criticalFailures": [
       "Splits overlapping tiles randomly instead of keeping every site and its derived tiles within one partition.",
-      "Rasterizes UAV polygons as complete hard labels while treating unannotated areas as confirmed background and ignoring mixed-pixel composition.",
-      "Declares a detectability threshold before examining held-out response evidence or without sample counts and uncertainty around the transition.",
+      "Rasterizes UAV polygons as complete hard labels while treating unknown or uncovered fractions as confirmed background and ignoring mixed-pixel composition.",
+      "Selects an operational threshold on the final test set, reports a descriptive transition as independently validated, or universalizes it without external confirmation.",
       "Reports only overall pixel accuracy or one model's best F1 and does not analyse probability response across spatial support and background conditions."
     ],
     "criteria": [
       {
-        "id": "measurement-contract",
-        "description": "Preserves surface-reflectance scaling and acquisition metadata, verifies alignment, represents residual displacement as uncertainty and treats the UAV-to-satellite scale mismatch explicitly."
+        "id": "measurement-alignment-and-coverage",
+        "description": "Preserves reflectance scaling and acquisition metadata, verifies alignment, represents residual displacement as uncertainty, and measures annotated and unknown coverage at satellite support."
       },
       {
         "id": "labels-and-missingness",
-        "description": "Builds hard and fractional soft labels or an equivalent mixture representation, weights label confidence where justified, and ignores genuinely unlabelled pixels rather than assigning background."
+        "description": "Represents annotated class fractions and unknown coverage separately, uses hard or soft targets only within their support, validates any confidence weighting, and does not convert unlabelled area to background."
       },
       {
-        "id": "site-level-split",
-        "description": "Partitions by independent site before tiling, balances relevant geographic and ecological factors using development data, and preserves a final site-level test role."
+        "id": "site-level-lifecycle",
+        "description": "Partitions by independent site before tiling, balances relevant factors using development data, estimates any operating rule without the final test set, and reserves independent sites for confirmation."
       },
       {
-        "id": "model-comparison",
-        "description": "Uses a transparent spectral baseline and several suitable spatial models to distinguish imagery-driven detectability patterns from architecture-specific behavior."
+        "id": "models-probability-and-calibration",
+        "description": "Uses a transparent spectral baseline and suitable spatial models, analyses continuous probabilities, validates calibration and threshold sensitivity, and tests whether response patterns persist across architectures."
       },
       {
-        "id": "probability-and-calibration",
-        "description": "Analyses continuous dead-tree probabilities, validates probability calibration and threshold sensitivity, and avoids interpreting a default hard threshold as intrinsic detectability."
-      },
-      {
-        "id": "multiscale-detectability",
-        "description": "Relates responses to subpixel fraction, local neighborhood density, connected-patch size or aggregation, plot dominance and competing live-tree or background composition."
+        "id": "scale-dependent-detectability",
+        "description": "Relates responses to fractional target cover, surrounding spatial support, aggregation or connected extent, and competing background composition at prespecified meaningful supports."
       },
       {
         "id": "uncertainty-and-applicability",
-        "description": "Reports bin counts and uncertainty, tests response consistency across models and regions, and limits global or individual-tree claims under geographic imbalance, single-date imagery and residual alignment uncertainty."
+        "description": "Reports support counts and uncertainty, separates descriptive from confirmatory thresholds, tests consistency across models and regions, and limits global or individual-tree claims under geographic imbalance and alignment uncertainty."
       }
     ]
   }

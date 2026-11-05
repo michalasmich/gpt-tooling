@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "seed": "geospatial-pilot-v1",
+  "seed": "geospatial-benchmark-v2",
   "candidate": {
     "model": "gpt-5.6",
     "reasoningEffort": "high",
@@ -11,6 +11,13 @@
     "model": "gpt-6-astra",
     "reasoningEffort": "high",
     "timeoutMs": 900000,
-    "pairwiseOrderRepetitions": 2
+    "pairwiseOrderRepetitions": 2,
+    "validityScoring": {
+      "minimum": 0,
+      "maximum": 3,
+      "passMinimumPerCriterion": 2,
+      "criticalFailureVeto": true
+    },
+    "paperAlignmentAffectsValidity": false
   }
 }
