@@ -417,7 +417,7 @@ function judgeArguments(config, temporary, output, schemaPath, prompt) {
     "--ignore-user-config", "--ignore-rules", "--disable", "hooks", "--disable", "plugins",
     "--disable", "shell_tool", "--disable", "browser_use", "--disable", "browser_use_external",
     "--disable", "computer_use", "--disable", "multi_agent", "--disable", "apps",
-    "--disable", "image_generation", "--disable", "code_mode", "--disable", "code_mode_host", "--disable", "in_app_browser",
+    "--disable", "image_generation", "--disable", "code_mode", "--disable", "in_app_browser",
     "--disable", "in_app_local_automation",
     "--sandbox", "read-only", "--model", config.judge.model,
     "--config", `model_reasoning_effort=\"${config.judge.reasoningEffort}\"`,
@@ -812,6 +812,7 @@ function selfTest() {
   for (const required of ["--ignore-user-config", "--ignore-rules", "hooks", "plugins", "shell_tool", "browser_use", "computer_use", "multi_agent", "code_mode", "--output-schema"]) {
     if (!isolated.includes(required)) throw new Error(`The isolated judge arguments omit ${required}.`);
   }
+  if (isolated.includes("code_mode_host")) throw new Error("The isolated judge disables the code-mode host and causes a startup error.");
   validateCompleteIds(cases[0].criteria.map((criterion) => ({ criterionId: criterion.id })), cases[0].criteria.map((criterion) => criterion.id), "criterionId", "fixture criterion");
   const fixtureWorkspace = path.join(root, "fixture-workspace");
   const permittedRead = { type: "command_execution", status: "completed", exit_code: 0, command: "Get-Content -Raw -LiteralPath .agents\\skills\\geospatial\\SKILL.md" };
