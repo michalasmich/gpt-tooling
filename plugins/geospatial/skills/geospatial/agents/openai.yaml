@@ -1,0 +1,4 @@
+interface:
+  display_name: "Geospatial"
+  short_description: "Evidence-grounded geospatial ML guidance"
+  default_prompt: "Use $geospatial to design a defensible Earth-observation workflow."

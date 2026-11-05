@@ -81,6 +81,7 @@ function validate(destination) {
     "plugins/plinth/.codex-plugin/plugin.json",
     "plugins/quire/.codex-plugin/plugin.json",
     "plugins/ponytail/.codex-plugin/plugin.json",
+    "plugins/geospatial/.codex-plugin/plugin.json",
     "scripts/install.js"
   ];
   for (const name of required) {

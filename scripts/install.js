@@ -8,6 +8,7 @@ const ponytailCompatibility = require("./prepare-ponytail");
 const root = path.join(__dirname, "..");
 const marketplacePath = path.join(root, ".agents", "plugins", "marketplace.json");
 const marketplaceName = "gpt-tooling";
+const marketplacePlugins = ["plinth", "quire", "ponytail", "geospatial"];
 const plugins = ["plinth", "quire", "ponytail"];
 const localPlugins = ["plinth", "quire"];
 const ponytailPath = path.join(root, "plugins", "ponytail");
@@ -43,7 +44,7 @@ function runCodex(args) {
 function verifyFiles() {
   const marketplace = readJson(marketplacePath);
   if (marketplace.name !== marketplaceName) throw new Error("The marketplace name is invalid.");
-  for (const name of plugins) {
+  for (const name of marketplacePlugins) {
     const entry = marketplace.plugins.find((plugin) => plugin.name === name);
     if (!entry || entry.source.path !== `./plugins/${name}`) throw new Error(`The ${name} marketplace entry is invalid.`);
     const manifest = readJson(path.join(root, "plugins", name, ".codex-plugin", "plugin.json"));
@@ -148,4 +149,3 @@ else {
   process.stderr.write("Usage: node scripts/install.js [test|update]\n");
   process.exitCode = 2;
 }
-

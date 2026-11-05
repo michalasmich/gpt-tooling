@@ -1,0 +1,33 @@
+{
+  "name": "geospatial",
+  "version": "0.1.0",
+  "description": "Evidence-grounded guidance for remote sensing, Earth observation, GIS, and geospatial machine learning.",
+  "author": {
+    "name": "GPT Tooling"
+  },
+  "repository": "https://github.com/michalasmich/gpt-tooling",
+  "license": "MIT",
+  "keywords": [
+    "remote-sensing",
+    "earth-observation",
+    "geospatial",
+    "computer-vision",
+    "machine-learning"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Geospatial",
+    "shortDescription": "Evidence-grounded geospatial ML guidance",
+    "longDescription": "A progressively disclosed domain skill for remote sensing, Earth observation, GIS, and geospatial computer-vision or machine-learning decisions.",
+    "developerName": "GPT Tooling",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "defaultPrompt": [
+      "Design a defensible Earth-observation workflow.",
+      "Review this geospatial ML validation design.",
+      "Choose an appropriate remote-sensing model."
+    ]
+  }
+}

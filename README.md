@@ -11,6 +11,7 @@ GPT-5.6 can reason broadly, write substantial code, and produce polished documen
 | [Plinth](plugins/plinth/README.md) | Requirements, technical semantics, methodology, evidence, risk, decisions, review, and verification | What is technically defensible? |
 | [Ponytail](plugins/ponytail/README.md) | Source-code form, reuse, dependency restraint, abstraction restraint, and the minimum correct diff | How little code should exist? |
 | [Quire](plugins/quire/README.md) | Natural-language expression, organization, readability, terminology, genre conventions, and faithful presentation | How should the accepted meaning be communicated? |
+| [Geospatial](plugins/geospatial/README.md) | Optional remote-sensing, Earth-observation, GIS, and geospatial ML domain guidance | What do the sensor, spatial, temporal, and deployment semantics require? |
 
 The modules cooperate through an explicit authority model:
 
@@ -32,7 +33,7 @@ This division keeps the policies independently maintainable. It also prevents co
 - Prefer the most direct practical evidence for a success claim. State what remains unverified when direct verification is unavailable.
 - Promote observed, generalizable agent failures into policy and behavioral regression tests. Avoid speculative process.
 
-The policies are general-purpose. They cover software, systems, hardware, numerical work, data, models, experiments, operations, and technical documents without naming a particular project, model, dataset, or domain workflow.
+Plinth, Ponytail, and Quire are general-purpose. Geospatial is an optional domain plugin that supplies progressively disclosed Earth-observation guidance without changing their authority boundaries.
 
 ## Installation
 
@@ -61,6 +62,16 @@ The installer:
 7. verifies that all three modules were installed from this checkout.
 
 Review and trust the bundled hooks after installation, then start a new Codex thread so the session and subagent policies load from a clean context.
+
+### Optional geospatial plugin
+
+The marketplace also exposes the Geospatial domain skill without installing it by default. Install it after the main installer registers this checkout:
+
+```bash
+codex plugin add geospatial@gpt-tooling
+```
+
+Start a new Codex thread after installation so automatic skill discovery uses the new plugin.
 
 ### Updating a local installation
 
@@ -156,6 +167,7 @@ Each semantic result is graded in a separate Codex context that ignores user con
 
 - [Plinth behavior](plugins/plinth/evals/behavior.md)
 - [Quire behavior](plugins/quire/evals/behavior.md)
+- [Geospatial behavior](plugins/geospatial/evals/behavior.md)
 
 The mechanical checks protect manifests, hook contracts, routes, selector metadata, context budgets, agent-profile semantics, dependency compatibility, and installer behavior. The behavioral suites protect policy outcomes without coupling them to exact prose.
 
@@ -178,6 +190,7 @@ Plinth and Quire use `SessionStart` and `SubagentStart` hooks to reactivate conc
 - [Plinth manual](plugins/plinth/README.md)
 - [Quire manual](plugins/quire/README.md)
 - [Ponytail manual](plugins/ponytail/README.md)
+- [Geospatial manual](plugins/geospatial/README.md)
 - [OpenAI skill documentation](https://learn.chatgpt.com/docs/build-skills)
 - [OpenAI plugin documentation](https://developers.openai.com/plugins/build/plugins)
 - [OpenAI hook documentation](https://learn.chatgpt.com/docs/hooks)
