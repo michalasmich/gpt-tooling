@@ -417,7 +417,7 @@ function judgeArguments(config, temporary, output, schemaPath, prompt) {
     "--ignore-user-config", "--ignore-rules", "--disable", "hooks", "--disable", "plugins",
     "--disable", "shell_tool", "--disable", "browser_use", "--disable", "browser_use_external",
     "--disable", "computer_use", "--disable", "multi_agent", "--disable", "apps",
-    "--disable", "image_generation", "--disable", "code_mode_host", "--disable", "in_app_browser",
+    "--disable", "image_generation", "--disable", "code_mode", "--disable", "code_mode_host", "--disable", "in_app_browser",
     "--disable", "in_app_local_automation",
     "--sandbox", "read-only", "--model", config.judge.model,
     "--config", `model_reasoning_effort=\"${config.judge.reasoningEffort}\"`,
@@ -809,7 +809,7 @@ function selfTest() {
   }
   if (!validityPrompt(cases[0], "fixture").includes("Anonymized answer:\nfixture")) throw new Error("The validity prompt is invalid.");
   const isolated = judgeArguments(config, "temporary", "output", "schema", "prompt");
-  for (const required of ["--ignore-user-config", "--ignore-rules", "hooks", "plugins", "shell_tool", "browser_use", "computer_use", "multi_agent", "--output-schema"]) {
+  for (const required of ["--ignore-user-config", "--ignore-rules", "hooks", "plugins", "shell_tool", "browser_use", "computer_use", "multi_agent", "code_mode", "--output-schema"]) {
     if (!isolated.includes(required)) throw new Error(`The isolated judge arguments omit ${required}.`);
   }
   validateCompleteIds(cases[0].criteria.map((criterion) => ({ criterionId: criterion.id })), cases[0].criteria.map((criterion) => criterion.id), "criterionId", "fixture criterion");
