@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "seed": "geospatial-benchmark-v2",
   "candidate": {
-    "model": "gpt-5.6",
+    "model": "gpt-5.6-sol",
     "reasoningEffort": "high",
     "repetitions": 2,
     "timeoutMs": 900000
