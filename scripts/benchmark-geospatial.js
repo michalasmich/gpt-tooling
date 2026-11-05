@@ -453,6 +453,20 @@ function executeJudge(config, prompt, schema, directory) {
   }
 }
 
+function resumedJudge(directory, prompt) {
+  for (const name of ["prompt.txt", "stderr.txt", "trace.jsonl", "result.json"]) {
+    if (!fs.existsSync(path.join(directory, name))) throw new Error(`Incomplete judgment artifact: ${path.join(directory, name)}.`);
+  }
+  if (fs.readFileSync(path.join(directory, "prompt.txt"), "utf8") !== `${prompt}\n`) {
+    throw new Error(`Existing judgment prompt does not match the current schedule: ${directory}.`);
+  }
+  const trace = parseTrace(fs.readFileSync(path.join(directory, "trace.jsonl"), "utf8"));
+  if (!trace.completed || trace.items.some((item) => !["reasoning", "agent_message"].includes(item.type))) {
+    throw new Error(`Existing judgment trace is incomplete or contains a non-answer tool item: ${directory}.`);
+  }
+  return { value: readJson(path.join(directory, "result.json")), trace };
+}
+
 function rubricText(item) {
   return item.criteria.map((criterion) => `- ${criterion.id}: ${criterion.description}`).join("\n");
 }
@@ -580,7 +594,9 @@ function runValidityJudges() {
   if (successful("git", ["status", "--porcelain"])) throw new Error("Validity judging requires a clean worktree.");
   const candidates = candidateArtifacts(config, cases);
   const validityRoot = path.join(outputRoot, "validity");
-  if (fs.existsSync(validityRoot)) throw new Error(`Validity outputs already exist: ${validityRoot}. Refusing to overwrite a grading record.`);
+  if (fs.existsSync(path.join(validityRoot, "manifest.json")) || fs.existsSync(path.join(validityRoot, "manifest.sha256"))) {
+    throw new Error(`Locked validity outputs already exist: ${validityRoot}. Refusing to overwrite a grading record.`);
+  }
   fs.mkdirSync(validityRoot, { recursive: true });
   const grades = [];
   const comparisons = [];
@@ -588,6 +604,22 @@ function runValidityJudges() {
   for (const candidate of candidates) {
     const item = cases.find((entry) => entry.id === candidate.caseId);
     const directory = path.join(validityRoot, "individual", candidate.blindId);
+    const gradePath = path.join(directory, "grade.json");
+    if (fs.existsSync(directory)) {
+      if (!fs.existsSync(gradePath)) throw new Error(`Incomplete validity grade must be archived before retry: ${directory}.`);
+      const grade = readJson(gradePath);
+      const resumed = resumedJudge(directory, validityPrompt(item, candidate.answer));
+      validateCompleteIds(grade.criteria, item.criteria.map((criterion) => criterion.id), "criterionId", "criterion");
+      validateCompleteIds(grade.criticalFailures, item.criticalFailures.map((_, index) => index), "failureIndex", "critical-failure");
+      const veto = grade.criticalFailures.some((failure) => failure.triggered);
+      const pass = !veto && grade.criteria.every((criterion) => criterion.score >= config.judge.validityScoring.passMinimumPerCriterion);
+      if (grade.candidateId !== candidate.id || grade.blindId !== candidate.blindId || grade.caseId !== candidate.caseId || grade.answerSha256 !== candidate.answerSha256 || grade.veto !== veto || grade.pass !== pass || JSON.stringify(grade.criteria) !== JSON.stringify(resumed.value.criteria) || JSON.stringify(grade.criticalFailures) !== JSON.stringify(resumed.value.criticalFailures) || grade.summary !== resumed.value.summary || JSON.stringify(grade.usage) !== JSON.stringify(resumed.trace.usage)) {
+        throw new Error(`Existing validity grade does not match the fixed schedule: ${gradePath}.`);
+      }
+      grades.push({ candidateId: candidate.id, file: path.relative(validityRoot, gradePath), sha256: fileSha256(gradePath) });
+      process.stdout.write(`SKIP GRADED ${candidate.blindId}\n`);
+      continue;
+    }
     const judged = executeJudge(config, validityPrompt(item, candidate.answer), judgeSchema(item), directory);
     validateCompleteIds(judged.value.criteria, item.criteria.map((criterion) => criterion.id), "criterionId", "criterion");
     validateCompleteIds(judged.value.criticalFailures, item.criticalFailures.map((_, index) => index), "failureIndex", "critical-failure");
@@ -606,7 +638,6 @@ function runValidityJudges() {
       durationMs: judged.durationMs,
       usage: judged.trace.usage
     };
-    const gradePath = path.join(directory, "grade.json");
     fs.writeFileSync(gradePath, `${JSON.stringify(grade, null, 2)}\n`, "utf8");
     grades.push({ candidateId: candidate.id, file: path.relative(validityRoot, gradePath), sha256: fileSha256(gradePath) });
     process.stdout.write(`GRADED ${candidate.blindId}\n`);
@@ -614,6 +645,19 @@ function runValidityJudges() {
 
   for (const planned of comparisonSchedule(config, cases, candidates)) {
     const directory = path.join(validityRoot, "pairwise", planned.pairId);
+    const comparisonPath = path.join(directory, "comparison.json");
+    if (fs.existsSync(directory)) {
+      if (!fs.existsSync(comparisonPath)) throw new Error(`Incomplete pairwise judgment must be archived before retry: ${directory}.`);
+      const comparison = readJson(comparisonPath);
+      const resumed = resumedJudge(directory, pairwisePrompt(planned.item, planned.answerA.answer, planned.answerB.answer));
+      validateCompleteIds(comparison.criteria, planned.item.criteria.map((criterion) => criterion.id), "criterionId", "pairwise criterion");
+      if (comparison.pairId !== planned.pairId || comparison.caseId !== planned.item.id || comparison.repetition !== planned.repetition || comparison.order !== planned.order || comparison.answerA !== planned.answerA.id || comparison.answerB !== planned.answerB.id || JSON.stringify(comparison.criteria) !== JSON.stringify(resumed.value.criteria) || comparison.winner !== resumed.value.winner || comparison.evidence !== resumed.value.evidence || JSON.stringify(comparison.usage) !== JSON.stringify(resumed.trace.usage)) {
+        throw new Error(`Existing pairwise judgment does not match the fixed schedule: ${comparisonPath}.`);
+      }
+      comparisons.push({ pairId: planned.pairId, file: path.relative(validityRoot, comparisonPath), sha256: fileSha256(comparisonPath) });
+      process.stdout.write(`SKIP COMPARED ${planned.pairId}\n`);
+      continue;
+    }
     const judged = executeJudge(config, pairwisePrompt(planned.item, planned.answerA.answer, planned.answerB.answer), pairwiseSchema(planned.item), directory);
     validateCompleteIds(judged.value.criteria, planned.item.criteria.map((criterion) => criterion.id), "criterionId", "pairwise criterion");
     const comparison = {
@@ -629,7 +673,6 @@ function runValidityJudges() {
       durationMs: judged.durationMs,
       usage: judged.trace.usage
     };
-    const comparisonPath = path.join(directory, "comparison.json");
     fs.writeFileSync(comparisonPath, `${JSON.stringify(comparison, null, 2)}\n`, "utf8");
     comparisons.push({ pairId: planned.pairId, file: path.relative(validityRoot, comparisonPath), sha256: fileSha256(comparisonPath) });
     process.stdout.write(`COMPARED ${planned.pairId}\n`);
@@ -794,6 +837,19 @@ function selfTest() {
   const parsed = parseTrace(fixture);
   if (!parsed.completed || parsed.usage.inputTokens !== 10 || parsed.tools.command_execution !== 1 || parsed.errorCount !== 0) {
     throw new Error("The trace parser rejected a known-good fixture.");
+  }
+  const resumeFixture = fs.mkdtempSync(path.join(os.tmpdir(), "geospatial-resume-test-"));
+  try {
+    fs.writeFileSync(path.join(resumeFixture, "prompt.txt"), "fixture\n", "utf8");
+    fs.writeFileSync(path.join(resumeFixture, "stderr.txt"), "", "utf8");
+    fs.writeFileSync(path.join(resumeFixture, "trace.jsonl"), [
+      JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "{}" } }),
+      JSON.stringify({ type: "turn.completed", usage: { input_tokens: 1, output_tokens: 1 } })
+    ].join("\n"), "utf8");
+    fs.writeFileSync(path.join(resumeFixture, "result.json"), "{}\n", "utf8");
+    if (!resumedJudge(resumeFixture, "fixture").trace.completed) throw new Error("The resume validator rejected a complete fixture.");
+  } finally {
+    fs.rmSync(resumeFixture, { recursive: true, force: true });
   }
   const disabled = pluginOverrides("no_gpt_tooling").join(" ");
   const full = pluginOverrides("geospatial_tooling").join(" ");
